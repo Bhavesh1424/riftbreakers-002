@@ -1,0 +1,18 @@
+{
+  "name": "riftbreakers",
+  "version": "1.0.0",
+  "description": "2D fighting game with an adaptive, pattern-reading AI opponent",
+  "main": "server/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
