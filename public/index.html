@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RIFTBREAKERS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ HUD (health bars / timer / round dots) ============ -->
+  <div id="hud">
+    <div class="fighter-panel left">
+      <div class="name-row"><span class="tag">P1</span><span class="fname" id="p1-name-display">KADE</span></div>
+      <div class="bar-frame"><div id="p1-health" class="bar-fill p1"></div><div class="bar-crack" id="p1-crack"></div></div>
+      <div class="super-bar-wrap">
+        <div class="super-bar-frame p1-super">
+          <div id="p1-super-fill" class="super-bar-fill p1-super-fill"></div>
+        </div>
+        <span class="super-label">SUPER</span>
+        <span id="p1-super-badge" class="super-badge p1-badge" style="display:none">PRESS T!</span>
+      </div>
+      <div class="round-dots" id="p1-dots"></div>
+    </div>
+
+    <div class="center-col">
+      <div id="timer">60</div>
+      <div id="ai-read" title="What the AI has learned about you">
+        <span class="read-label" id="ai-read-label">AI READ</span>
+        <span id="ai-read-text">observing…</span>
+      </div>
+    </div>
+
+    <div class="fighter-panel right">
+      <div class="name-row"><span class="fname" id="p2-name-display">VEX</span><span class="tag" id="p2-tag-display">AI</span></div>
+      <div class="bar-frame"><div id="p2-health" class="bar-fill p2"></div><div class="bar-crack" id="p2-crack"></div></div>
+      <div class="super-bar-wrap right-super">
+        <span id="p2-super-badge" class="super-badge p2-badge" style="display:none">PRESS Y!</span>
+        <span class="super-label">SUPER</span>
+        <div class="super-bar-frame p2-super">
+          <div id="p2-super-fill" class="super-bar-fill p2-super-fill"></div>
+        </div>
+      </div>
+      <div class="round-dots" id="p2-dots"></div>
+    </div>
+  </div>
+
+    <canvas id="stage" width="960" height="540"></canvas>
+
+  <div id="combo-toast"></div>
+
+  <!-- ============ Overlays ============ -->
+  <div id="overlay-start" class="overlay">
+    <div class="crack-divider" aria-hidden="true"></div>
+    <h1 class="title">RIFTBREAKERS</h1>
+    <p class="subtitle">Choose your battle mode and enter the rift.</p>
+    <div class="menu-buttons">
+      <button id="btn-play-ai" class="btn-primary btn-menu">VS VEX (AI)</button>
+      <button id="btn-play-local" class="btn-primary btn-menu btn-secondary-menu">LOCAL 1v1 (2 PLAYER)</button>
+      <button id="btn-play-online" class="btn-primary btn-menu btn-secondary-menu" style="background:linear-gradient(135deg,#6600cc,#33d6c4);border-color:#33d6c4;">ONLINE 1v1 (MULTIPLAYER)</button>
+      <button id="btn-difficulty" class="btn-primary btn-menu btn-secondary-menu">CHOOSE DIFFICULTY</button>
+    </div>
+    <div class="current-diff-display">
+      <span class="diff-label">AI DIFFICULTY:</span>
+      <span id="current-diff-text" class="diff-value">MEDIUM</span>
+    </div>
+    <button id="btn-reset-ai" class="btn-ghost">forget me (reset AI memory)</button>
+  </div>
+
+  <!-- ============ ONLINE MULTIPLAYER SETUP OVERLAY ============ -->
+  <div id="overlay-online-setup" class="overlay hidden">
+    <div class="crack-divider" aria-hidden="true"></div>
+    <h2 class="title diff-title">ONLINE 1v1 MULTIPLAYER</h2>
+    <p class="subtitle">Fight friends online via Room Code or ngrok link!</p>
+
+    <div class="setup-grid" style="grid-template-columns: 1fr 1fr; max-width: 720px; margin: 0 auto;">
+      <!-- Host Room Box -->
+      <div class="player-setup-box" style="border-color:#33d6c4;">
+        <div class="setup-header"><span class="tag" style="background:#33d6c4;color:#000;">CREATE ROOM</span></div>
+        <div class="input-group">
+          <label>YOUR NAME</label>
+          <input type="text" id="input-online-p1-name" value="HOST" maxlength="12" />
+        </div>
+        <button id="btn-online-create" class="btn-primary" style="margin-top:15px;width:100%;">CREATE ROOM CODE</button>
+        <div id="online-host-code-wrap" style="display:none;margin-top:15px;text-align:center;">
+          <div style="font-size:0.85rem;color:#aaa;margin-bottom:4px;">SHARE THIS ROOM CODE:</div>
+          <div id="online-room-code-display" style="font-family:'Bebas Neue';font-size:2.5rem;color:#33d6c4;letter-spacing:4px;background:rgba(0,0,0,0.4);padding:8px;border:1px dashed #33d6c4;border-radius:4px;">------</div>
+          <div style="font-size:0.8rem;color:#d9a94e;margin-top:8px;" class="pulse">Waiting for opponent to join…</div>
+        </div>
+      </div>
+
+      <!-- Join Room Box -->
+      <div class="player-setup-box" style="border-color:#e0334f;">
+        <div class="setup-header"><span class="tag" style="background:#e0334f;color:#fff;">JOIN ROOM</span></div>
+        <div class="input-group">
+          <label>YOUR NAME</label>
+          <input type="text" id="input-online-p2-name" value="CHALLENGER" maxlength="12" />
+        </div>
+        <div class="input-group" style="margin-top:10px;">
+          <label>ENTER 6-DIGIT ROOM CODE</label>
+          <input type="text" id="input-online-room-code" placeholder="e.g. AB12CD" maxlength="6" style="text-transform:uppercase;font-family:'Bebas Neue';font-size:1.4rem;letter-spacing:3px;text-align:center;" />
+        </div>
+        <button id="btn-online-join" class="btn-primary" style="margin-top:15px;width:100%;background:#e0334f;border-color:#ff4d6d;">JOIN MATCH</button>
+        <div id="online-join-error" style="color:#ff4d6d;font-size:0.85rem;margin-top:8px;display:none;"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;display:flex;gap:15px;justify-content:center;">
+      <button id="btn-online-back" class="btn-ghost">back to menu</button>
+    </div>
+  </div>
+
+  <!-- ============ VS VEX Setup Overlay ============ -->
+  <div id="overlay-ai-setup" class="overlay hidden">
+    <div class="crack-divider" aria-hidden="true"></div>
+    <h2 class="title diff-title">VS VEX SETUP</h2>
+    <p class="subtitle">Customize your fighter, color, and control scheme</p>
+    
+    <div class="setup-grid">
+      <div class="player-setup-box p1-setup">
+        <div class="setup-header"><span class="tag">YOUR FIGHTER</span></div>
+        <div class="input-group">
+          <label>NAME</label>
+          <input type="text" id="input-ai-player-name" value="KADE" maxlength="12" placeholder="Your Name" />
+        </div>
+        
+        <div class="input-group">
+          <label>CHOOSE CHARACTER COLOR</label>
+          <div class="setup-option-group">
+            <button id="btn-ai-color-blue" class="btn-setup-opt selected" data-val="blue">BLUE</button>
+            <button id="btn-ai-color-red" class="btn-setup-opt" data-val="red">RED</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>CHOOSE CONTROLS</label>
+          <div class="setup-option-group">
+            <button id="btn-ai-ctrl-p1" class="btn-setup-opt selected" data-val="p1">P1 (WASD)</button>
+            <button id="btn-ai-ctrl-p2" class="btn-setup-opt" data-val="p2">P2 (ARROWS)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="player-setup-box p2-setup flex-preview">
+        <div class="setup-header"><span class="tag p2-tag">VEX (AI OPPONENT)</span></div>
+        <div class="preview-text-block">
+          <p>Vex will automatically play with the opposite color and controls.</p>
+          <div id="ai-matchup-summary" class="matchup-summary-text">
+            KADE (BLUE, P1 controls) vs VEX (RED, AI controls)
+          </div>
+        </div>
+        <div class="controls-guide-tiny">
+          <div class="ctrl-p1-guide">
+            <strong>P1 Controls:</strong> WASD (Move/Jump/Block), Space (Dodge), J/K/L/G/T (Punch/Kick/Special/Grab/SUPER)
+          </div>
+          <div class="ctrl-p2-guide" style="display:none;">
+            <strong>P2 Controls:</strong> Arrows (Move/Jump/Block), Numpad 0 (Dodge), I/O/P/U/Y (Punch/Kick/Special/Grab/SUPER)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diff-actions">
+      <button id="btn-start-ai" class="btn-primary">FIGHT!</button>
+      <button id="btn-ai-back" class="btn-ghost">back to menu</button>
+    </div>
+  </div>
+
+  <!-- ============ Local 2P Setup Overlay ============ -->
+  <div id="overlay-local-setup" class="overlay hidden">
+    <div class="crack-divider" aria-hidden="true"></div>
+    <h2 class="title diff-title">LOCAL 1v1 SETUP</h2>
+    <p class="subtitle">Customize color and control schemes for both players</p>
+    
+    <div class="setup-grid">
+      <div class="player-setup-box p1-setup" id="local-box-left">
+        <div class="setup-header"><span class="tag" id="local-left-role-tag">PLAYER 1</span></div>
+        <div class="input-group">
+          <label>NAME</label>
+          <input type="text" id="input-p1-name" value="KADE" maxlength="12" placeholder="P1 Name" />
+        </div>
+
+        <div class="input-group">
+          <label>COLOR</label>
+          <div class="setup-option-group">
+            <button id="btn-local-l-blue" class="btn-setup-opt selected" data-val="blue">BLUE</button>
+            <button id="btn-local-l-red" class="btn-setup-opt" data-val="red">RED</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>CONTROLS</label>
+          <div class="setup-option-group">
+            <button id="btn-local-l-ctrl-p1" class="btn-setup-opt selected" data-val="p1">P1 (WASD)</button>
+            <button id="btn-local-l-ctrl-p2" class="btn-setup-opt" data-val="p2">P2 (ARROWS)</button>
+          </div>
+        </div>
+
+        <div class="controls-guide" id="local-left-guide">
+          <div><span class="key">A / D</span> Move</div>
+          <div><span class="key">W</span> Jump</div>
+          <div><span class="key">S</span> Block</div>
+          <div><span class="key">Space</span> Dodge</div>
+          <div><span class="key">J</span> Punch</div>
+          <div><span class="key">K</span> Kick</div>
+          <div><span class="key">L</span> Special</div>
+          <div><span class="key">G</span> Grab</div>
+          <div><span class="key">T</span> ⚡ SUPER</div>
+        </div>
+      </div>
+
+      <div class="player-setup-box p2-setup" id="local-box-right">
+        <div class="setup-header"><span class="tag p2-tag" id="local-right-role-tag">PLAYER 2</span></div>
+        <div class="input-group">
+          <label>NAME</label>
+          <input type="text" id="input-p2-name" value="DRAKE" maxlength="12" placeholder="P2 Name" />
+        </div>
+
+        <div class="input-group">
+          <label>COLOR</label>
+          <div class="setup-option-group">
+            <button id="btn-local-r-blue" class="btn-setup-opt" data-val="blue">BLUE</button>
+            <button id="btn-local-r-red" class="btn-setup-opt selected" data-val="red">RED</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>CONTROLS</label>
+          <div class="setup-option-group">
+            <button id="btn-local-r-ctrl-p1" class="btn-setup-opt" data-val="p1">P1 (WASD)</button>
+            <button id="btn-local-r-ctrl-p2" class="btn-setup-opt selected" data-val="p2">P2 (ARROWS)</button>
+          </div>
+        </div>
+
+        <div class="controls-guide" id="local-right-guide">
+          <div><span class="key">← / →</span> Move</div>
+          <div><span class="key">↑</span> Jump</div>
+          <div><span class="key">↓</span> Block</div>
+          <div><span class="key">Numpad 0</span> Dodge</div>
+          <div><span class="key">Numpad 1 / I</span> Punch</div>
+          <div><span class="key">Numpad 2 / O</span> Kick</div>
+          <div><span class="key">Numpad 3 / P</span> Special</div>
+          <div><span class="key">Numpad 4 / U</span> Grab</div>
+          <div><span class="key">Numpad 5 / Y</span> ⚡ SUPER</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diff-actions">
+      <button id="btn-start-local" class="btn-primary">FIGHT!</button>
+      <button id="btn-local-back" class="btn-ghost">back to menu</button>
+    </div>
+  </div>
+
+  <div id="overlay-difficulty" class="overlay hidden">
+    <div class="crack-divider" aria-hidden="true"></div>
+    <h2 class="title diff-title">CHOOSE DIFFICULTY</h2>
+    <p class="subtitle">How ruthless should Vex be?</p>
+    <div class="diff-cards">
+      <button class="diff-card" data-diff="easy">
+        <div class="diff-card-icon">🟢</div>
+        <div class="diff-card-name">EASY</div>
+        <div class="diff-card-desc">Vex is sluggish. Slower reactions, telegraphed attacks, lower aggression.</div>
+        <div class="diff-card-tag">FOR BEGINNERS</div>
+      </button>
+      <button class="diff-card selected" data-diff="medium">
+        <div class="diff-card-icon">🟡</div>
+        <div class="diff-card-name">MEDIUM</div>
+        <div class="diff-card-desc">Vex adapts to your patterns. Balanced reactions, reads your habits mid-match.</div>
+        <div class="diff-card-tag">RECOMMENDED</div>
+      </button>
+      <button class="diff-card" data-diff="hard">
+        <div class="diff-card-icon">🔴</div>
+        <div class="diff-card-name">HARD</div>
+        <div class="diff-card-desc">Vex is relentless. Lightning reflexes, punishes mistakes, never lets up.</div>
+        <div class="diff-card-tag">FOR VETERANS</div>
+      </button>
+    </div>
+    <div class="diff-actions">
+      <button id="btn-diff-confirm" class="btn-primary">CONFIRM</button>
+      <button id="btn-diff-back" class="btn-ghost">back to menu</button>
+    </div>
+  </div>
+
+  <div id="overlay-round" class="overlay overlay-transient hidden">
+    <div class="round-callout" id="round-callout">ROUND 1</div>
+    <div class="fight-callout" id="fight-callout"></div>
+  </div>
+
+  <div id="overlay-ko" class="overlay overlay-transient hidden">
+    <div class="ko-backdrop"></div>
+    <div class="ko-text">K.O.</div>
+    <div class="ko-subtext" id="ko-winner-text">FINISH!</div>
+  </div>
+
+  <div id="overlay-end" class="overlay hidden">
+    <h2 class="title" id="end-title">—</h2>
+    <p class="subtitle" id="end-subtitle"></p>
+    <button id="btn-rematch" class="btn-primary">REMATCH</button>
+  </div>
+
+</div>
+
+<script src="js/network.js"></script>
+<script src="js/fighter.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
