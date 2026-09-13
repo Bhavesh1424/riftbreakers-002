@@ -19,17 +19,17 @@ Built with pure vanilla HTML5 Canvas, modern Web Audio, Three.js visuals, and No
 
 ## 🕹️ Controls
 
-| Action | Player 1 (Left / Default) | Player 2 (Right / Local) |
+| Action | WASD Scheme | ARROWS Scheme |
 | :--- | :--- | :--- |
 | **Move Left / Right** | `A` / `D` | `Left Arrow` / `Right Arrow` |
 | **Jump** | `W` | `Up Arrow` |
 | **Block** | `S` (hold) | `Down Arrow` (hold) |
 | **Dodge** | `Space` | `Numpad 0` / `Right Shift` |
-| **Punch** | `J` | `Numpad 1` / `I` |
-| **Kick** | `K` | `Numpad 2` / `O` |
-| **Special** | `L` | `Numpad 3` / `P` |
-| **Grab** *(beats block)* | `G` | `Numpad 4` / `U` |
-| **⚡ SUPER MOVE** | `T` *(when charged)* | `Numpad 5` / `Y` *(when charged)* |
+| **Punch** | `C` | `J` / `Numpad 1` |
+| **Kick** | `Z` | `K` / `Numpad 2` |
+| **Special** | `X` | `L` / `Numpad 3` |
+| **Grab** *(beats block)* | `V` | `I` / `Numpad 4` |
+| **⚡ SUPER MOVE** | `T` *(when charged)* | `Y` / `Numpad 5` *(when charged)* |
 | **⛶ Toggle Fullscreen** | `F` *(universal key)* | `F` *(universal key)* |
 
 > [!TIP]

@@ -64,13 +64,13 @@
   function handleKeyDown(code) {
     if (phase !== "fighting") return;
 
-    // Player 1 controls (WASD / J/K/L/G/T)
+    // WASD controls: C for punch, V for grab, X for special, Z for kick, T for super
     if (gameMode === "local" || (gameMode === "ai" && humanFighter === p1ControlTarget)) {
       switch (code) {
-        case "KeyJ": tryPlayerAttack(p1ControlTarget, "punch"); break;
-        case "KeyK": tryPlayerAttack(p1ControlTarget, "kick"); break;
-        case "KeyL": tryPlayerAttack(p1ControlTarget, "special"); break;
-        case "KeyG": tryPlayerAttack(p1ControlTarget, "grab"); break;
+        case "KeyC": tryPlayerAttack(p1ControlTarget, "punch"); break;
+        case "KeyZ": tryPlayerAttack(p1ControlTarget, "kick"); break;
+        case "KeyX": tryPlayerAttack(p1ControlTarget, "special"); break;
+        case "KeyV": tryPlayerAttack(p1ControlTarget, "grab"); break;
         case "KeyT": tryPlayerSuper(p1ControlTarget, p1ControlTarget === p1 ? p2 : p1); break;
         case "Space": p1ControlTarget.dodge(); if (gameMode === "ai") Network.playerAction("dodge", "n/a", dist()); break;
         case "KeyW": p1ControlTarget.jump(); break;
@@ -78,14 +78,14 @@
       }
     }
 
-    // Player 2 controls (Arrows / Numpad / I/O/P/U/Y)
+    // ARROWS controls: J for punch, K for kick, L for special, I for grab, Y for super
     if (gameMode === "local" || (gameMode === "ai" && humanFighter === p2ControlTarget)) {
       switch (code) {
-        case "Numpad1": case "KeyI": tryPlayerAttack(p2ControlTarget, "punch"); break;
-        case "Numpad2": case "KeyO": tryPlayerAttack(p2ControlTarget, "kick"); break;
-        case "Numpad3": case "KeyP": tryPlayerAttack(p2ControlTarget, "special"); break;
-        case "Numpad4": case "KeyU": tryPlayerAttack(p2ControlTarget, "grab"); break;
-        case "Numpad5": case "KeyY": tryPlayerSuper(p2ControlTarget, p2ControlTarget === p1 ? p2 : p1); break;
+        case "KeyJ": case "Numpad1": tryPlayerAttack(p2ControlTarget, "punch"); break;
+        case "KeyK": case "Numpad2": tryPlayerAttack(p2ControlTarget, "kick"); break;
+        case "KeyL": case "Numpad3": tryPlayerAttack(p2ControlTarget, "special"); break;
+        case "KeyI": case "Numpad4": tryPlayerAttack(p2ControlTarget, "grab"); break;
+        case "KeyY": case "Numpad5": tryPlayerSuper(p2ControlTarget, p2ControlTarget === p1 ? p2 : p1); break;
         case "Numpad0": case "ShiftRight": p2ControlTarget.dodge(); break;
         case "ArrowUp": p2ControlTarget.jump(); break;
         case "ArrowDown": p2ControlTarget.setBlocking(true); break;
@@ -605,10 +605,11 @@
     const guideP1 = document.querySelector(".controls-guide-tiny .ctrl-p1-guide");
     const guideP2 = document.querySelector(".controls-guide-tiny .ctrl-p2-guide");
 
+    const ctrlName = aiSetupCtrl === "p1" ? "WASD" : "ARROWS";
     if (aiSetupColor === "blue") {
-      summaryEl.textContent = `${pName} (BLUE, ${aiSetupCtrl.toUpperCase()} keys) vs VEX (RED, AI controls)`;
+      summaryEl.textContent = `${pName} (BLUE, ${ctrlName} keys) vs VEX (RED, AI controls)`;
     } else {
-      summaryEl.textContent = `${pName} (RED, ${aiSetupCtrl.toUpperCase()} keys) vs KADE (BLUE, AI controls)`;
+      summaryEl.textContent = `${pName} (RED, ${ctrlName} keys) vs KADE (BLUE, AI controls)`;
     }
 
     if (aiSetupCtrl === "p1") {
@@ -664,10 +665,10 @@
       <div><span class="key">W</span> Jump</div>
       <div><span class="key">S</span> Block</div>
       <div><span class="key">Space</span> Dodge</div>
-      <div><span class="key">J</span> Punch</div>
-      <div><span class="key">K</span> Kick</div>
-      <div><span class="key">L</span> Special</div>
-      <div><span class="key">G</span> Grab</div>
+      <div><span class="key">C</span> Punch</div>
+      <div><span class="key">Z</span> Kick</div>
+      <div><span class="key">X</span> Special</div>
+      <div><span class="key">V</span> Grab</div>
       <div><span class="key">T</span> ⚡ SUPER</div>
     `;
 
@@ -676,23 +677,23 @@
       <div><span class="key">↑</span> Jump</div>
       <div><span class="key">↓</span> Block</div>
       <div><span class="key">Numpad 0</span> Dodge</div>
-      <div><span class="key">Numpad 1 / I</span> Punch</div>
-      <div><span class="key">Numpad 2 / O</span> Kick</div>
-      <div><span class="key">Numpad 3 / P</span> Special</div>
-      <div><span class="key">Numpad 4 / U</span> Grab</div>
-      <div><span class="key">Numpad 5 / Y</span> ⚡ SUPER</div>
+      <div><span class="key">J</span> Punch</div>
+      <div><span class="key">K</span> Kick</div>
+      <div><span class="key">L</span> Special</div>
+      <div><span class="key">I</span> Grab</div>
+      <div><span class="key">Y</span> ⚡ SUPER</div>
     `;
 
     if (localLeftCtrl === "p1") {
       leftGuide.innerHTML = p1GuideHtml;
       rightGuide.innerHTML = p2GuideHtml;
-      document.getElementById("local-left-role-tag").textContent = "P1 CONTROLS";
-      document.getElementById("local-right-role-tag").textContent = "P2 CONTROLS";
+      document.getElementById("local-left-role-tag").textContent = "WASD";
+      document.getElementById("local-right-role-tag").textContent = "ARROWS";
     } else {
       leftGuide.innerHTML = p2GuideHtml;
       rightGuide.innerHTML = p1GuideHtml;
-      document.getElementById("local-left-role-tag").textContent = "P2 CONTROLS";
-      document.getElementById("local-right-role-tag").textContent = "P1 CONTROLS";
+      document.getElementById("local-left-role-tag").textContent = "ARROWS";
+      document.getElementById("local-right-role-tag").textContent = "WASD";
     }
   }
 
