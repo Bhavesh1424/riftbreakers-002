@@ -45,11 +45,6 @@
   // ---------------- input ----------------
   window.addEventListener("keydown", (e) => {
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-    if (e.code === "KeyF") {
-      e.preventDefault();
-      toggleFullscreen();
-      return;
-    }
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     if (keys.has(e.code)) return;
     keys.add(e.code);
@@ -1061,18 +1056,6 @@
     }
   }
 
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.warn("Fullscreen request failed:", err);
-      });
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  }
-
   function setScaleMode(mode) {
     screenScaleMode = mode;
     const label = document.getElementById("scale-mode-label");
@@ -1082,30 +1065,12 @@
     updateScale();
   }
 
-  const btnFs = document.getElementById("btn-fullscreen");
-  if (btnFs) {
-    btnFs.addEventListener("click", toggleFullscreen);
-  }
-
   const btnScale = document.getElementById("btn-scale-mode");
   if (btnScale) {
     btnScale.addEventListener("click", () => {
       setScaleMode(screenScaleMode === "fill" ? "fit" : "fill");
     });
   }
-
-  document.addEventListener("fullscreenchange", () => {
-    const fsIcon = document.getElementById("fs-btn-icon");
-    const fsLabel = document.getElementById("fs-btn-label");
-    if (document.fullscreenElement) {
-      if (fsIcon) fsIcon.textContent = "🗗";
-      if (fsLabel) fsLabel.textContent = "EXIT FULLSCREEN";
-    } else {
-      if (fsIcon) fsIcon.textContent = "⛶";
-      if (fsLabel) fsLabel.textContent = "FULLSCREEN";
-    }
-    updateScale();
-  });
 
   window.addEventListener("resize", updateScale);
   updateScale();

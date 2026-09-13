@@ -30,11 +30,9 @@ Built with pure vanilla HTML5 Canvas, modern Web Audio, Three.js visuals, and No
 | **Special** | `X` | `L` / `Numpad 3` |
 | **Grab** *(beats block)* | `V` | `I` / `Numpad 4` |
 | **⚡ SUPER MOVE** | `T` *(when charged)* | `Y` / `Numpad 5` *(when charged)* |
-| **⛶ Toggle Fullscreen** | `F` *(universal key)* | `F` *(universal key)* |
 
 > [!TIP]
-> **Display & Fullscreen**:
-> - Press **`F`** anytime to enter or exit borderless Fullscreen mode.
+> **Display Modes**:
 > - Use the floating screen widget at the bottom right to toggle between **FILL SCREEN** (edge-to-edge coverage) and **FIT (16:9)** aspect ratio.
 > **Super Moves**: Landing combo hits charges your super meter.
 > - **Blue Fighter**: Kamehameha Energy Beam blast.
