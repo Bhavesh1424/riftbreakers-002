@@ -354,7 +354,23 @@
 
     document.getElementById("p1-name-display").textContent = p1.name;
     document.getElementById("p2-name-display").textContent = p2.name;
-    document.getElementById("p2-tag-display").textContent = gameMode === "ai" ? "AI" : "P2";
+
+    const p1Tag = document.getElementById("p1-tag-display");
+    const p2Tag = document.getElementById("p2-tag-display");
+    if (p1Tag && p2Tag) {
+      if (gameMode === "ai") {
+        if (humanFighter === p1) {
+          p1Tag.textContent = "P1";
+          p2Tag.textContent = "AI";
+        } else {
+          p1Tag.textContent = "AI";
+          p2Tag.textContent = "P1";
+        }
+      } else {
+        p1Tag.textContent = "P1";
+        p2Tag.textContent = "P2";
+      }
+    }
 
     document.getElementById("ai-read-label").textContent = gameMode === "ai" ? "AI READ" : "MODE";
     document.getElementById("ai-read-text").textContent = readText(aiKnowledge);
@@ -458,11 +474,20 @@
     phase = "roundEnd";
 
     const isKO = p1.health <= 0 || p2.health <= 0;
-    const playerWon = p2.health <= 0 || (timeLeft <= 0 && p1.health > p2.health);
     const draw = timeLeft <= 0 && p1.health === p2.health;
-    if (!draw) { if (playerWon) match.p1Wins++; else match.p2Wins++; }
+    let roundWinner = null;
+    if (!draw) {
+      if (p1.health > p2.health) {
+        roundWinner = p1;
+        match.p1Wins++;
+      } else {
+        roundWinner = p2;
+        match.p2Wins++;
+      }
+    }
     renderDots();
-    if (gameMode === "ai") Network.roundEnd(playerWon);
+    const humanWon = (gameMode === "ai") ? (roundWinner === humanFighter) : (roundWinner === p1);
+    if (gameMode === "ai") Network.roundEnd(humanWon);
 
     let delay = 900;
 
@@ -473,7 +498,7 @@
 
       const koOverlay = document.getElementById("overlay-ko");
       const koWinnerText = document.getElementById("ko-winner-text");
-      const winnerName = playerWon ? p1.name.toUpperCase() : p2.name.toUpperCase();
+      const winnerName = roundWinner ? roundWinner.name.toUpperCase() : "NO ONE";
       koWinnerText.textContent = `${winnerName} WINS!`;
 
       koOverlay.classList.remove("hidden");
@@ -483,13 +508,14 @@
     }
 
     // Play win mock speech
-    if (!draw && window.Sound) {
-      const winnerFighter = playerWon ? p1 : p2;
-      Sound.playWinMock(winnerFighter, winnerFighter.color === "#33d6c4");
+    if (!draw && window.Sound && roundWinner) {
+      Sound.playWinMock(roundWinner, roundWinner.color === "#33d6c4");
     }
 
     if (match.p1Wins >= match.best || match.p2Wins >= match.best) {
-      setTimeout(() => showMatchEnd(match.p1Wins > match.p2Wins), delay);
+      const matchWinner = match.p1Wins > match.p2Wins ? p1 : p2;
+      const matchHumanWon = (gameMode === "ai") ? (matchWinner === humanFighter) : (matchWinner === p1);
+      setTimeout(() => showMatchEnd(matchHumanWon), delay);
     } else {
       match.round++;
       setTimeout(startRound, delay);
@@ -747,7 +773,7 @@
       aiFighter = p2;
     } else {
       // Player is Red (Right), AI is Blue (Left)
-      p1.name = "KADE";
+      p1.name = "VEX";
       p1.color = "#33d6c4";
       p2.name = playerName;
       p2.color = "#e0334f";
