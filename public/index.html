@@ -55,13 +55,11 @@
 
   <!-- ============ Overlays ============ -->
   <div id="overlay-start" class="overlay">
-    <div class="crack-divider" aria-hidden="true"></div>
     <h1 class="title">RIFTBREAKERS</h1>
     <p class="subtitle">Choose your battle mode and enter the rift.</p>
     <div class="menu-buttons">
       <button id="btn-play-ai" class="btn-primary btn-menu">VS VEX (AI)</button>
       <button id="btn-play-local" class="btn-primary btn-menu btn-secondary-menu">LOCAL 1v1 (2 PLAYER)</button>
-      <button id="btn-play-online" class="btn-primary btn-menu btn-secondary-menu" style="background:linear-gradient(135deg,#6600cc,#33d6c4);border-color:#33d6c4;">ONLINE 1v1 (MULTIPLAYER)</button>
       <button id="btn-difficulty" class="btn-primary btn-menu btn-secondary-menu">CHOOSE DIFFICULTY</button>
     </div>
     <div class="current-diff-display">
@@ -71,52 +69,8 @@
     <button id="btn-reset-ai" class="btn-ghost">forget me (reset AI memory)</button>
   </div>
 
-  <!-- ============ ONLINE MULTIPLAYER SETUP OVERLAY ============ -->
-  <div id="overlay-online-setup" class="overlay hidden">
-    <div class="crack-divider" aria-hidden="true"></div>
-    <h2 class="title diff-title">ONLINE 1v1 MULTIPLAYER</h2>
-    <p class="subtitle">Fight friends online via Room Code or ngrok link!</p>
-
-    <div class="setup-grid" style="grid-template-columns: 1fr 1fr; max-width: 720px; margin: 0 auto;">
-      <!-- Host Room Box -->
-      <div class="player-setup-box" style="border-color:#33d6c4;">
-        <div class="setup-header"><span class="tag" style="background:#33d6c4;color:#000;">CREATE ROOM</span></div>
-        <div class="input-group">
-          <label>YOUR NAME</label>
-          <input type="text" id="input-online-p1-name" value="HOST" maxlength="12" />
-        </div>
-        <button id="btn-online-create" class="btn-primary" style="margin-top:15px;width:100%;">CREATE ROOM CODE</button>
-        <div id="online-host-code-wrap" style="display:none;margin-top:15px;text-align:center;">
-          <div style="font-size:0.85rem;color:#aaa;margin-bottom:4px;">SHARE THIS ROOM CODE:</div>
-          <div id="online-room-code-display" style="font-family:'Bebas Neue';font-size:2.5rem;color:#33d6c4;letter-spacing:4px;background:rgba(0,0,0,0.4);padding:8px;border:1px dashed #33d6c4;border-radius:4px;">------</div>
-          <div style="font-size:0.8rem;color:#d9a94e;margin-top:8px;" class="pulse">Waiting for opponent to join…</div>
-        </div>
-      </div>
-
-      <!-- Join Room Box -->
-      <div class="player-setup-box" style="border-color:#e0334f;">
-        <div class="setup-header"><span class="tag" style="background:#e0334f;color:#fff;">JOIN ROOM</span></div>
-        <div class="input-group">
-          <label>YOUR NAME</label>
-          <input type="text" id="input-online-p2-name" value="CHALLENGER" maxlength="12" />
-        </div>
-        <div class="input-group" style="margin-top:10px;">
-          <label>ENTER 6-DIGIT ROOM CODE</label>
-          <input type="text" id="input-online-room-code" placeholder="e.g. AB12CD" maxlength="6" style="text-transform:uppercase;font-family:'Bebas Neue';font-size:1.4rem;letter-spacing:3px;text-align:center;" />
-        </div>
-        <button id="btn-online-join" class="btn-primary" style="margin-top:15px;width:100%;background:#e0334f;border-color:#ff4d6d;">JOIN MATCH</button>
-        <div id="online-join-error" style="color:#ff4d6d;font-size:0.85rem;margin-top:8px;display:none;"></div>
-      </div>
-    </div>
-
-    <div style="margin-top:20px;display:flex;gap:15px;justify-content:center;">
-      <button id="btn-online-back" class="btn-ghost">back to menu</button>
-    </div>
-  </div>
-
   <!-- ============ VS VEX Setup Overlay ============ -->
   <div id="overlay-ai-setup" class="overlay hidden">
-    <div class="crack-divider" aria-hidden="true"></div>
     <h2 class="title diff-title">VS VEX SETUP</h2>
     <p class="subtitle">Customize your fighter, color, and control scheme</p>
     
@@ -172,7 +126,6 @@
 
   <!-- ============ Local 2P Setup Overlay ============ -->
   <div id="overlay-local-setup" class="overlay hidden">
-    <div class="crack-divider" aria-hidden="true"></div>
     <h2 class="title diff-title">LOCAL 1v1 SETUP</h2>
     <p class="subtitle">Customize color and control schemes for both players</p>
     
@@ -257,7 +210,6 @@
   </div>
 
   <div id="overlay-difficulty" class="overlay hidden">
-    <div class="crack-divider" aria-hidden="true"></div>
     <h2 class="title diff-title">CHOOSE DIFFICULTY</h2>
     <p class="subtitle">How ruthless should Vex be?</p>
     <div class="diff-cards">
@@ -300,7 +252,10 @@
   <div id="overlay-end" class="overlay hidden">
     <h2 class="title" id="end-title">—</h2>
     <p class="subtitle" id="end-subtitle"></p>
-    <button id="btn-rematch" class="btn-primary">REMATCH</button>
+    <div class="menu-buttons">
+      <button id="btn-rematch" class="btn-primary btn-menu">REMATCH</button>
+      <button id="btn-end-menu" class="btn-primary btn-menu btn-secondary-menu">RETURN TO MENU</button>
+    </div>
   </div>
 
 </div>

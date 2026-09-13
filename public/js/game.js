@@ -95,13 +95,17 @@
     }
   }
 
-  function tryPlayerSuper(attacker, defender) {
+  function tryPlayerSuper(attacker, defender, broadcast = true) {
     if (!attacker.superReady || attacker.superUsed) return;
     if (Effects.isSuperActive()) return;
     attacker.superUsed = true;
     attacker.superReady = false;
     attacker.superComboHits = 0; // drain the bar so it must be re-earned
     updateSuperHud();
+
+    if (gameMode === "online" && broadcast) {
+      Network.sendSuper(onlineSide);
+    }
 
     // Trigger Super based on Color: Blue is Kamehameha, Red is Asteroid Rain
     if (attacker.color === "#33d6c4") {
@@ -113,6 +117,7 @@
         defender.stateTimer = 0;
         defender.hitstunDuration = 1500; // 1.5-second super stun
         Effects.spawnHitEffect((attacker.x + defender.x) / 2, defender.y - 50, "special");
+        updateHud();
       });
     } else {
       // Asteroid Rain for Red
@@ -123,6 +128,7 @@
         defender.stateTimer = 0;
         defender.hitstunDuration = 1500; // 1.5-second super stun
         Effects.spawnHitEffect(defender.x, defender.y - 50, "special");
+        updateHud();
       });
     }
   }
@@ -255,7 +261,17 @@
   // ---------------- combat resolution ----------------
   function resolveAttacks() {
     const d = diff();
-    for (const [attacker, defender] of [[p1, p2], [p2, p1]]) {
+    let pairs = [[p1, p2], [p2, p1]];
+    if (gameMode === "online") {
+      // In online mode, each player is authoritative over their own attacks landing
+      if (onlineSide === "p1") {
+        pairs = [[p1, p2]];
+      } else if (onlineSide === "p2") {
+        pairs = [[p2, p1]];
+      }
+    }
+
+    for (const [attacker, defender] of pairs) {
       const hb = attacker.activeHitbox();
       if (!hb || attacker._hitApplied) continue;
       if (aabbOverlap(hb, defender.hurtbox())) {
@@ -281,6 +297,21 @@
           const combo = attacker.registerComboHit(performance.now());
           if (combo >= 2) showCombo(combo);
           updateSuperHud();
+        }
+
+        // In online mode, immediately broadcast this hit to the remote opponent
+        if (gameMode === "online") {
+          const targetKey = defender === p1 ? "p1" : "p2";
+          Network.sendHit({
+            target: targetKey,
+            damage: dmg,
+            chip: chipDmg,
+            pushback: hb.pushback,
+            beatsBlock: hb.beatsBlock,
+            fromX: attacker.x,
+            move: attacker.currentMove || "punch",
+            outcomeResult: outcome.result
+          });
         }
       }
     }
@@ -789,115 +820,72 @@
     startRound();
   });
 
-  // ---------------- online 1v1 multiplayer ----------------
-  let onlineSide = null; // "p1" | "p2"
-  let onlineRemoteKeys = {};
-  let onlineTick = 0;
+  // (Online 1v1 multiplayer section removed)
 
-  document.getElementById("btn-play-online").addEventListener("click", async () => {
-    document.getElementById("overlay-start").classList.add("hidden");
-    document.getElementById("overlay-online-setup").classList.remove("hidden");
-    phase = "onlineSetup";
-    await Network.connect();
-  });
+  Network.onRemoteHit((hitData) => {
+    if (gameMode !== "online" || !hitData) return;
+    const defender = hitData.target === "p1" ? p1 : p2;
+    const attacker = hitData.target === "p1" ? p2 : p1;
 
-  document.getElementById("btn-online-back").addEventListener("click", () => {
-    document.getElementById("overlay-online-setup").classList.add("hidden");
-    document.getElementById("overlay-start").classList.remove("hidden");
-    phase = "menu";
-  });
+    defender.takeHit({
+      damage: hitData.damage,
+      chip: hitData.chip,
+      pushback: hitData.pushback,
+      beatsBlock: hitData.beatsBlock,
+      fromX: hitData.fromX
+    });
 
-  document.getElementById("btn-online-create").addEventListener("click", async () => {
-    const p1Name = document.getElementById("input-online-p1-name").value.trim().toUpperCase() || "HOST";
-    try {
-      const code = await Network.createRoom(p1Name);
-      onlineSide = "p1";
-      p1.name = p1Name; p1.color = "#33d6c4";
-      document.getElementById("online-room-code-display").textContent = code;
-      document.getElementById("online-host-code-wrap").style.display = "block";
-    } catch (err) {
-      alert("Failed to create room: " + err.message);
-    }
-  });
-
-  document.getElementById("btn-online-join").addEventListener("click", async () => {
-    const code = document.getElementById("input-online-room-code").value.trim().toUpperCase();
-    const p2Name = document.getElementById("input-online-p2-name").value.trim().toUpperCase() || "CHALLENGER";
-    const errEl = document.getElementById("online-join-error");
-    errEl.style.display = "none";
-
-    if (!code || code.length !== 6) {
-      errEl.textContent = "Please enter a valid 6-character room code.";
-      errEl.style.display = "block";
-      return;
-    }
-
-    try {
-      const msg = await Network.joinRoom(code, p2Name);
-      startOnlineMatch(msg);
-    } catch (err) {
-      errEl.textContent = err.message;
-      errEl.style.display = "block";
-    }
-  });
-
-  Network.onRoomEvent((msg) => {
-    if (msg.type === "match_start") {
-      startOnlineMatch(msg);
-    } else if (msg.type === "opponent_left") {
-      if (gameMode === "online") {
-        alert("Opponent disconnected.");
-        location.reload();
-      }
-    }
-  });
-
-  Network.onRemoteInput((keys) => {
-    onlineRemoteKeys = keys || {};
-  });
-
-  function startOnlineMatch(msg) {
-    gameMode = "online";
-    onlineSide = msg.side;
-
-    if (onlineSide === "p1") {
-      p1.name = document.getElementById("input-online-p1-name").value.trim().toUpperCase() || "HOST";
-      p1.color = "#33d6c4";
-      p2.name = msg.opponentName || "CHALLENGER";
-      p2.color = "#e0334f";
+    const impactX = (attacker.x + defender.x) / 2;
+    const impactY = defender.y - 50;
+    if (hitData.outcomeResult === "blocked") {
+      Effects.spawnBlockEffect(impactX, impactY);
     } else {
-      p1.name = msg.opponentName || "HOST";
-      p1.color = "#33d6c4";
-      p2.name = document.getElementById("input-online-p2-name").value.trim().toUpperCase() || "CHALLENGER";
-      p2.color = "#e0334f";
+      Effects.spawnHitEffect(impactX, impactY, hitData.move || "punch");
+      const combo = attacker.registerComboHit(performance.now());
+      if (combo >= 2) showCombo(combo);
     }
+    updateHud();
+    updateSuperHud();
+  });
 
-    document.getElementById("overlay-online-setup").classList.add("hidden");
+  Network.onRemoteSuper((side) => {
+    if (gameMode !== "online") return;
+    const attacker = side === "p1" ? p1 : p2;
+    const defender = side === "p1" ? p2 : p1;
+    tryPlayerSuper(attacker, defender, false);
+  });
+
+  Network.onRemoteRematch(() => {
+    if (gameMode !== "online") return;
     match = { p1Wins: 0, p2Wins: 0, round: 1, best: 2 };
+    p1.resetForMatch(300, 1);
+    p2.resetForMatch(660, -1);
+    document.getElementById("overlay-end").classList.add("hidden");
     renderDots();
     startRound();
-  }
+  });
 
   Network.onStateSync((s) => {
-    if (!s || onlineSide === "p1") return; // Host is authoritative
-    // Client (P2) receives and applies canonical state from Host (P1)
-    if (s.p1) {
-      p1.x = s.p1.x; p1.y = s.p1.y;
-      p1.health = s.p1.health; p1.specialMeter = s.p1.specialMeter;
-      if (s.p1.state && p1.state !== s.p1.state) {
-        if (s.p1.state === "hitstun") p1.stateTimer = 0;
-        p1.state = s.p1.state;
+    if (!s || gameMode !== "online") return;
+    if (s.side === onlineSide) return; // Don't process our own echo
+
+    const opponent = s.side === "p1" ? p1 : p2;
+    if (opponent) {
+      // Smooth position sync from authoritative client
+      opponent.x = s.x;
+      opponent.y = s.y;
+      opponent.health = Math.min(opponent.health, s.health);
+      opponent.specialMeter = s.specialMeter;
+      if (s.facing !== undefined) opponent.facing = s.facing;
+      if (s.state && opponent.state !== s.state && s.state !== "attack") {
+        if (s.state === "hitstun") opponent.stateTimer = 0;
+        opponent.state = s.state;
       }
     }
-    if (s.p2) {
-      p2.x = s.p2.x; p2.y = s.p2.y;
-      p2.health = s.p2.health; p2.specialMeter = s.p2.specialMeter;
-      if (s.p2.state && p2.state !== s.p2.state) {
-        if (s.p2.state === "hitstun") p2.stateTimer = 0;
-        p2.state = s.p2.state;
-      }
+    // Host syncs authoritative timer
+    if (s.side === "p1" && s.timeLeft !== undefined) {
+      timeLeft = s.timeLeft;
     }
-    if (s.timeLeft !== undefined) timeLeft = s.timeLeft;
     updateHud();
   });
 
@@ -928,12 +916,17 @@
       applyFighterInputState(myFighter, localKeyList);
       applyFighterInputState(opponentFighter, onlineRemoteKeys);
 
-      // Host (P1) broadcasts authoritative game state at 20Hz (every 3 frames)
-      if (onlineSide === "p1" && onlineTick % 3 === 0) {
+      // Both players broadcast their local character's position and state every 3 frames (~20Hz)
+      if (onlineTick % 3 === 0) {
         Network.sendStateSync({
-          p1: { x: Math.round(p1.x), y: Math.round(p1.y), health: p1.health, specialMeter: p1.specialMeter, state: p1.state },
-          p2: { x: Math.round(p2.x), y: Math.round(p2.y), health: p2.health, specialMeter: p2.specialMeter, state: p2.state },
-          timeLeft: Math.round(timeLeft * 10) / 10
+          side: onlineSide,
+          x: Math.round(myFighter.x),
+          y: Math.round(myFighter.y),
+          health: myFighter.health,
+          specialMeter: myFighter.specialMeter,
+          state: myFighter.state,
+          facing: myFighter.facing,
+          timeLeft: onlineSide === "p1" ? Math.round(timeLeft * 10) / 10 : undefined
         });
       }
     } else {
@@ -985,6 +978,9 @@
   });
 
   document.getElementById("btn-rematch").addEventListener("click", () => {
+    if (gameMode === "online") {
+      Network.sendRematch();
+    }
     match = { p1Wins: 0, p2Wins: 0, round: 1, best: 2 };
     p1.resetForMatch(300, 1);
     p2.resetForMatch(660, -1);
@@ -992,6 +988,41 @@
     renderDots();
     startRound();
   });
+
+  function returnToMenu() {
+    phase = "menu";
+    gameMode = "ai";
+    onlineSide = null;
+    match = { p1Wins: 0, p2Wins: 0, round: 1, best: 2 };
+    keys.clear();
+    Effects.resetSlowMo();
+
+    p1.name = "KADE";
+    p1.color = "#33d6c4";
+    p2.name = "VEX";
+    p2.color = "#e0334f";
+    humanFighter = p1;
+    aiFighter = p2;
+    p1ControlTarget = p1;
+    p2ControlTarget = p2;
+
+    p1.resetForMatch(300, 1);
+    p2.resetForMatch(660, -1);
+    timeLeft = ROUND_TIME;
+
+    document.getElementById("overlay-end").classList.add("hidden");
+    document.getElementById("overlay-ko").classList.add("hidden");
+    document.getElementById("overlay-round").classList.add("hidden");
+    document.getElementById("overlay-start").classList.remove("hidden");
+
+    renderDots();
+    updateHud();
+  }
+
+  const btnEndMenu = document.getElementById("btn-end-menu");
+  if (btnEndMenu) {
+    btnEndMenu.addEventListener("click", returnToMenu);
+  }
 
   document.getElementById("btn-reset-ai").addEventListener("click", async () => {
     const id = Network.playerId();

@@ -213,12 +213,7 @@ html, body {
 }
 
 .crack-divider {
-  position: absolute;
-  top: 0; bottom: 0; left: 50%;
-  width: 3px;
-  background: linear-gradient(180deg, transparent, var(--molten) 20%, var(--gold) 50%, var(--molten) 80%, transparent);
-  filter: drop-shadow(0 0 8px var(--molten));
-  opacity: 0.5;
+  display: none;
 }
 
 .controls-grid {

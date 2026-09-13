@@ -9,6 +9,9 @@ const Network = (() => {
   let remoteInputHandler = null;
   let roomEventsHandler = null;
   let stateSyncHandler = null;
+  let remoteHitHandler = null;
+  let remoteSuperHandler = null;
+  let remoteRematchHandler = null;
 
   function playerId() {
     let id = localStorage.getItem("riftbreakers_pid");
@@ -49,6 +52,12 @@ const Network = (() => {
             onSummary(msg.summary);
           } else if (msg.type === "remote_input" && remoteInputHandler) {
             remoteInputHandler(msg.keys, msg.tick);
+          } else if (msg.type === "remote_hit" && remoteHitHandler) {
+            remoteHitHandler(msg.hit);
+          } else if (msg.type === "remote_super" && remoteSuperHandler) {
+            remoteSuperHandler(msg.side);
+          } else if (msg.type === "remote_rematch" && remoteRematchHandler) {
+            remoteRematchHandler();
           } else if (msg.type === "state_sync" && stateSyncHandler) {
             stateSyncHandler(msg.state);
           } else if ((msg.type === "match_start" || msg.type === "opponent_left") && roomEventsHandler) {
@@ -157,14 +166,21 @@ const Network = (() => {
 
   function sendInput(keys, tick) { send({ type: "input", keys, tick }); }
   function sendStateSync(state) { send({ type: "state_sync", state }); }
+  function sendHit(hit) { send({ type: "hit", hit }); }
+  function sendSuper(side) { send({ type: "super", side }); }
+  function sendRematch() { send({ type: "rematch" }); }
 
   function onStateSync(fn) { stateSyncHandler = fn; }
   function onRemoteInput(fn) { remoteInputHandler = fn; }
+  function onRemoteHit(fn) { remoteHitHandler = fn; }
+  function onRemoteSuper(fn) { remoteSuperHandler = fn; }
+  function onRemoteRematch(fn) { remoteRematchHandler = fn; }
   function onRoomEvent(fn) { roomEventsHandler = fn; }
 
   return {
     connect,
     isReady, requestDecision, playerAction, aiAttackOutcome, aiWhiff, roundEnd, setSummaryHandler, playerId,
-    createRoom, joinRoom, sendInput, sendStateSync, onStateSync, onRemoteInput, onRoomEvent
+    createRoom, joinRoom, sendInput, sendStateSync, sendHit, sendSuper, sendRematch,
+    onStateSync, onRemoteInput, onRemoteHit, onRemoteSuper, onRemoteRematch, onRoomEvent
   };
 })();

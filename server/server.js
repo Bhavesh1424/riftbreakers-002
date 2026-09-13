@@ -107,7 +107,8 @@ wss.on("connection", (ws) => {
     // ── Online Room Messages ──────────────────
     if (msg.type === "create_room") {
       const code = makeRoomCode();
-      rooms.set(code, { p1: ws, p2: null, createdAt: Date.now() });
+      const p1Name = (msg.p1Name || "HOST").trim();
+      rooms.set(code, { p1: ws, p2: null, p1Name, createdAt: Date.now() });
       roomCode = code;
       roomSide = "p1";
       sendTo(ws, { type: "room_created", code });
@@ -124,29 +125,39 @@ wss.on("connection", (ws) => {
       roomCode = code;
       roomSide = "p2";
 
-      // Notify both players — include their fighter name if sent
-      const p1Name = msg.p1Name || "PLAYER 1";
-      const p2Name = msg.p2Name || "PLAYER 2";
+      // Notify both players with their opponent's chosen name
+      const p1Name = room.p1Name || "PLAYER 1";
+      const p2Name = (msg.p2Name || "PLAYER 2").trim();
       sendTo(room.p1, { type: "match_start", side: "p1", opponentName: p2Name });
       sendTo(room.p2, { type: "match_start", side: "p2", opponentName: p1Name });
       return;
     }
 
-    if (msg.type === "input") {
-      // Relay this player's input state to the opponent
+    if (roomCode) {
       const room = rooms.get(roomCode);
-      if (!room) return;
-      const opponent = roomSide === "p1" ? room.p2 : room.p1;
-      sendTo(opponent, { type: "remote_input", keys: msg.keys, tick: msg.tick });
-      return;
-    }
-
-    if (msg.type === "state_sync") {
-      // Relay authoritative game state from Host (P1) to Client (P2)
-      const room = rooms.get(roomCode);
-      if (!room) return;
-      sendTo(room.p2, { type: "state_sync", state: msg.state });
-      return;
+      if (room) {
+        const opponent = roomSide === "p1" ? room.p2 : room.p1;
+        if (msg.type === "input") {
+          sendTo(opponent, { type: "remote_input", keys: msg.keys, tick: msg.tick });
+          return;
+        }
+        if (msg.type === "hit") {
+          sendTo(opponent, { type: "remote_hit", hit: msg.hit });
+          return;
+        }
+        if (msg.type === "super") {
+          sendTo(opponent, { type: "remote_super", side: roomSide });
+          return;
+        }
+        if (msg.type === "state_sync") {
+          sendTo(opponent, { type: "state_sync", state: msg.state });
+          return;
+        }
+        if (msg.type === "rematch") {
+          sendTo(opponent, { type: "remote_rematch" });
+          return;
+        }
+      }
     }
 
     if (msg.type === "ping_online") {
