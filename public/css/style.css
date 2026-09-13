@@ -727,14 +727,19 @@ html, body {
   font-size: 14px;
 }
 
+#ai-controls-box {
+  border-top: 3px solid var(--gold);
+}
+
 .matchup-summary-text {
-  margin-top: 24px;
-  padding: 12px;
+  margin-top: 10px;
+  padding: 6px 10px;
   background: rgba(0, 0, 0, 0.4);
   border: 1px dashed rgba(217, 169, 78, 0.3);
   border-radius: 6px;
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 15px;
+  letter-spacing: 1.5px;
   color: var(--gold);
   text-shadow: 0 0 8px rgba(217, 169, 78, 0.4);
   text-align: center;

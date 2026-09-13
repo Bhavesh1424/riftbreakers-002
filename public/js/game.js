@@ -590,6 +590,30 @@
     });
   }
 
+  const wasdGuideHtml = `
+    <div><span class="key">A / D</span> Move</div>
+    <div><span class="key">W</span> Jump</div>
+    <div><span class="key">S</span> Block</div>
+    <div><span class="key">Space</span> Dodge</div>
+    <div><span class="key">C</span> Punch</div>
+    <div><span class="key">Z</span> Kick</div>
+    <div><span class="key">X</span> Special</div>
+    <div><span class="key">V</span> Grab</div>
+    <div><span class="key">T</span> ⚡ SUPER</div>
+  `;
+
+  const arrowsGuideHtml = `
+    <div><span class="key">← / →</span> Move</div>
+    <div><span class="key">↑</span> Jump</div>
+    <div><span class="key">↓</span> Block</div>
+    <div><span class="key">Numpad 0</span> Dodge</div>
+    <div><span class="key">J</span> Punch</div>
+    <div><span class="key">K</span> Kick</div>
+    <div><span class="key">L</span> Special</div>
+    <div><span class="key">I</span> Grab</div>
+    <div><span class="key">Y</span> ⚡ SUPER</div>
+  `;
+
   // VS VEX (AI) Setup Choices
   let aiSetupColor = "blue";
   let aiSetupCtrl = "p1";
@@ -597,22 +621,19 @@
   function updateAiSetupSummary() {
     const pName = document.getElementById("input-ai-player-name").value.trim().toUpperCase() || "HERO";
     const summaryEl = document.getElementById("ai-matchup-summary");
-    const guideP1 = document.querySelector(".controls-guide-tiny .ctrl-p1-guide");
-    const guideP2 = document.querySelector(".controls-guide-tiny .ctrl-p2-guide");
+    const aiGuide = document.getElementById("ai-controls-guide");
 
     const ctrlName = aiSetupCtrl === "p1" ? "WASD" : "ARROWS";
-    if (aiSetupColor === "blue") {
-      summaryEl.textContent = `${pName} (BLUE, ${ctrlName} keys) vs VEX (RED, AI controls)`;
-    } else {
-      summaryEl.textContent = `${pName} (RED, ${ctrlName} keys) vs KADE (BLUE, AI controls)`;
+    if (summaryEl) {
+      if (aiSetupColor === "blue") {
+        summaryEl.textContent = `${pName} (BLUE, ${ctrlName}) vs VEX (RED, AI)`;
+      } else {
+        summaryEl.textContent = `${pName} (RED, ${ctrlName}) vs KADE (BLUE, AI)`;
+      }
     }
 
-    if (aiSetupCtrl === "p1") {
-      guideP1.style.display = "block";
-      guideP2.style.display = "none";
-    } else {
-      guideP1.style.display = "none";
-      guideP2.style.display = "block";
+    if (aiGuide) {
+      aiGuide.innerHTML = aiSetupCtrl === "p1" ? wasdGuideHtml : arrowsGuideHtml;
     }
   }
 
@@ -655,38 +676,14 @@
     const leftGuide = document.getElementById("local-left-guide");
     const rightGuide = document.getElementById("local-right-guide");
 
-    const p1GuideHtml = `
-      <div><span class="key">A / D</span> Move</div>
-      <div><span class="key">W</span> Jump</div>
-      <div><span class="key">S</span> Block</div>
-      <div><span class="key">Space</span> Dodge</div>
-      <div><span class="key">C</span> Punch</div>
-      <div><span class="key">Z</span> Kick</div>
-      <div><span class="key">X</span> Special</div>
-      <div><span class="key">V</span> Grab</div>
-      <div><span class="key">T</span> ⚡ SUPER</div>
-    `;
-
-    const p2GuideHtml = `
-      <div><span class="key">← / →</span> Move</div>
-      <div><span class="key">↑</span> Jump</div>
-      <div><span class="key">↓</span> Block</div>
-      <div><span class="key">Numpad 0</span> Dodge</div>
-      <div><span class="key">J</span> Punch</div>
-      <div><span class="key">K</span> Kick</div>
-      <div><span class="key">L</span> Special</div>
-      <div><span class="key">I</span> Grab</div>
-      <div><span class="key">Y</span> ⚡ SUPER</div>
-    `;
-
     if (localLeftCtrl === "p1") {
-      leftGuide.innerHTML = p1GuideHtml;
-      rightGuide.innerHTML = p2GuideHtml;
+      leftGuide.innerHTML = wasdGuideHtml;
+      rightGuide.innerHTML = arrowsGuideHtml;
       document.getElementById("local-left-role-tag").textContent = "WASD";
       document.getElementById("local-right-role-tag").textContent = "ARROWS";
     } else {
-      leftGuide.innerHTML = p2GuideHtml;
-      rightGuide.innerHTML = p1GuideHtml;
+      leftGuide.innerHTML = arrowsGuideHtml;
+      rightGuide.innerHTML = wasdGuideHtml;
       document.getElementById("local-left-role-tag").textContent = "ARROWS";
       document.getElementById("local-right-role-tag").textContent = "WASD";
     }

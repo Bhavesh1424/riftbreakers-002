@@ -97,24 +97,23 @@
             <button id="btn-ai-ctrl-p2" class="btn-setup-opt" data-val="p2">ARROWS</button>
           </div>
         </div>
-
-        <div class="controls-guide-tiny">
-          <div class="ctrl-p1-guide">
-            <strong>WASD Controls:</strong> WASD (Move/Jump/Block), Space (Dodge), C (Punch), Z (Kick), X (Special), V (Grab), T (SUPER)
-          </div>
-          <div class="ctrl-p2-guide" style="display:none;">
-            <strong>Arrows Controls:</strong> Arrows (Move/Jump/Block), Numpad 0 / R-Shift (Dodge), J (Punch), K (Kick), L (Special), I (Grab), Y (SUPER)
-          </div>
-        </div>
       </div>
 
-      <div class="player-setup-box p2-setup flex-preview">
-        <div class="setup-header"><span class="tag p2-tag">VEX (AI OPPONENT)</span></div>
-        <div class="preview-text-block">
-          <p>Vex will automatically play with the opposite color and controls.</p>
-          <div id="ai-matchup-summary" class="matchup-summary-text">
-            KADE (BLUE, WASD keys) vs VEX (RED, AI controls)
-          </div>
+      <div class="player-setup-box flex-preview" id="ai-controls-box">
+        <div class="setup-header"><span class="tag">YOUR CONTROLS</span></div>
+        <div class="controls-guide" id="ai-controls-guide">
+          <div><span class="key">A / D</span> Move</div>
+          <div><span class="key">W</span> Jump</div>
+          <div><span class="key">S</span> Block</div>
+          <div><span class="key">Space</span> Dodge</div>
+          <div><span class="key">C</span> Punch</div>
+          <div><span class="key">Z</span> Kick</div>
+          <div><span class="key">X</span> Special</div>
+          <div><span class="key">V</span> Grab</div>
+          <div><span class="key">T</span> ⚡ SUPER</div>
+        </div>
+        <div id="ai-matchup-summary" class="matchup-summary-text">
+          KADE (BLUE, WASD) vs VEX (RED, AI)
         </div>
       </div>
     </div>
