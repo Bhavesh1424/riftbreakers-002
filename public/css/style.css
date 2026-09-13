@@ -297,15 +297,29 @@ html, body {
 }
 
 /* ================= main menu buttons ================= */
+#overlay-start .title {
+  font-size: 52px;
+  letter-spacing: 3px;
+  margin: 0 0 4px;
+}
+#overlay-start .subtitle {
+  font-size: 13px;
+  margin: 0 0 16px;
+  max-width: 440px;
+}
+
 .menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 .btn-menu {
-  width: 280px;
+  width: 230px;
+  font-size: 16px;
+  padding: 9px 20px;
+  letter-spacing: 1.5px;
   text-align: center;
 }
 .btn-secondary-menu {
@@ -323,22 +337,28 @@ html, body {
 .current-diff-display {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-  font-size: 13px;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 12px;
 }
 .diff-label {
   font-family: var(--font-display);
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   color: var(--bone-dim);
-  font-size: 12px;
+  font-size: 11px;
 }
 .diff-value {
   font-family: var(--font-display);
-  letter-spacing: 2px;
-  font-size: 15px;
+  letter-spacing: 1.5px;
+  font-size: 13px;
   color: var(--gold);
   text-shadow: 0 0 8px rgba(217, 169, 78, 0.4);
+}
+
+#overlay-start #btn-reset-ai {
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.7;
 }
 
 /* ================= difficulty overlay ================= */
@@ -729,20 +749,6 @@ html, body {
 
 #ai-controls-box {
   border-top: 3px solid var(--gold);
-}
-
-.matchup-summary-text {
-  margin-top: 10px;
-  padding: 6px 10px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px dashed rgba(217, 169, 78, 0.3);
-  border-radius: 6px;
-  font-family: var(--font-display);
-  font-size: 15px;
-  letter-spacing: 1.5px;
-  color: var(--gold);
-  text-shadow: 0 0 8px rgba(217, 169, 78, 0.4);
-  text-align: center;
 }
 
 .controls-guide-tiny {

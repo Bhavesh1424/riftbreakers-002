@@ -373,11 +373,25 @@
       p2Bar.style.width = `${p2.superMeterPct * 100}%`;
       p2Bar.classList.toggle("super-ready", p2.superReady && !p2.superUsed);
     }
-    // show super-ready badge
+    // show super-ready badge with dynamic key hint based on assigned controls
     const p1badge = document.getElementById("p1-super-badge");
     const p2badge = document.getElementById("p2-super-badge");
-    if (p1badge) p1badge.style.display = (p1.superReady && !p1.superUsed) ? "block" : "none";
-    if (p2badge) p2badge.style.display = (p2.superReady && !p2.superUsed) ? "block" : "none";
+    if (p1badge) {
+      if (gameMode === "ai" && p1 === aiFighter) {
+        p1badge.textContent = "READY!";
+      } else {
+        p1badge.textContent = p1ControlTarget === p1 ? "PRESS T!" : "PRESS Y!";
+      }
+      p1badge.style.display = (p1.superReady && !p1.superUsed) ? "block" : "none";
+    }
+    if (p2badge) {
+      if (gameMode === "ai" && p2 === aiFighter) {
+        p2badge.textContent = "READY!";
+      } else {
+        p2badge.textContent = p1ControlTarget === p2 ? "PRESS T!" : "PRESS Y!";
+      }
+      p2badge.style.display = (p2.superReady && !p2.superUsed) ? "block" : "none";
+    }
   }
 
   function renderDots() {
@@ -619,19 +633,7 @@
   let aiSetupCtrl = "p1";
 
   function updateAiSetupSummary() {
-    const pName = document.getElementById("input-ai-player-name").value.trim().toUpperCase() || "HERO";
-    const summaryEl = document.getElementById("ai-matchup-summary");
     const aiGuide = document.getElementById("ai-controls-guide");
-
-    const ctrlName = aiSetupCtrl === "p1" ? "WASD" : "ARROWS";
-    if (summaryEl) {
-      if (aiSetupColor === "blue") {
-        summaryEl.textContent = `${pName} (BLUE, ${ctrlName}) vs VEX (RED, AI)`;
-      } else {
-        summaryEl.textContent = `${pName} (RED, ${ctrlName}) vs KADE (BLUE, AI)`;
-      }
-    }
-
     if (aiGuide) {
       aiGuide.innerHTML = aiSetupCtrl === "p1" ? wasdGuideHtml : arrowsGuideHtml;
     }
