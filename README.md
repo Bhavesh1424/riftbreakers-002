@@ -1,72 +1,102 @@
-# Riftbreakers
+# ⚡ RIFTBREAKERS
 
-A 2D one-on-one fighting game (Mortal Kombat–style) with an AI opponent, **Vex**,
-that reads your habits mid-match and counters them — plays cautious against
-turtles, mixes in grabs against block-happy players, and dodges more against
-whoever spams kicks.
+An arcade-style 2D fighting game featuring **Vex**, an adaptive, pattern-reading AI opponent that learns your combat habits mid-match and dynamically counters your playstyle. 
 
-## Run it
+Built with pure vanilla HTML5 Canvas, modern Web Audio, Three.js visuals, and Node.js WebSockets.
 
+---
+
+## 🎮 Game Modes
+
+- **VS VEX (AI Mode)**: Fight against an adaptive AI opponent that learns whether you prefer punches, kicks, turtle-blocking, or whiffing, adjusting move weights and reflex parries in real time.
+- **LOCAL 1v1 (2-Player)**: Battle friends head-to-head on the same keyboard with full customizable color palettes and controller configurations.
+- **Difficulty Selection**:
+  - 🟢 **Easy**: Sluggish AI reactions, slower tick rate, reduced aggression.
+  - 🟡 **Medium**: Balanced adaptive reactions with pattern-reading mid-match.
+  - 🔴 **Hard**: Relentless AI aggression with rapid reflexes and ruthless whiff-punishing.
+
+---
+
+## 🕹️ Controls
+
+| Action | Player 1 (Left / Default) | Player 2 (Right / Local) |
+| :--- | :--- | :--- |
+| **Move Left / Right** | `A` / `D` | `Left Arrow` / `Right Arrow` |
+| **Jump** | `W` | `Up Arrow` |
+| **Block** | `S` (hold) | `Down Arrow` (hold) |
+| **Dodge** | `Space` | `Numpad 0` / `Right Shift` |
+| **Punch** | `J` | `Numpad 1` / `I` |
+| **Kick** | `K` | `Numpad 2` / `O` |
+| **Special** | `L` | `Numpad 3` / `P` |
+| **Grab** *(beats block)* | `G` | `Numpad 4` / `U` |
+| **⚡ SUPER MOVE** | `T` *(when charged)* | `Numpad 5` / `Y` *(when charged)* |
+
+> [!TIP]
+> **Super Moves**: Landing combo hits charges your super meter.
+> - **Blue Fighter**: Kamehameha Energy Beam blast.
+> - **Red Fighter**: Cosmic Asteroid Rain barrage.
+
+---
+
+## 🚀 Quick Start
+
+### 1. Installation
 ```bash
 npm install
+```
+
+### 2. Start Game Server
+```bash
 npm start
 ```
 
-Then open **http://localhost:3000**.
+### 3. Open in Browser
+Visit **[http://localhost:3000](http://localhost:3000)**
 
-Controls: `A`/`D` move · `W` jump · `S` hold to block · `Space` dodge ·
-`J` punch · `K` kick · `L` special · `G` grab.
+---
 
-## How it's built
+## 🧠 How the Adaptive AI (Vex) Works
+
+`server/aiEngine.js` uses a **heuristic pattern-reader** that reacts to your tendencies within a single match:
+
+1. **Habit Tracking**: Tracks your attack distribution (punches, kicks, grabs, specials), block frequency, dodge timing, and whiff-punish success rate.
+2. **Dynamic Weighting**: Adjusts counter-action probabilities:
+   - High block rate → mixes in unblockable grabs and specials.
+   - Kick or punch spamming → increases dodge and directional parry weights.
+   - Aggressive rushing → plays patient and waits for punishable whiffs.
+3. **Reflex Layer**: `game.js` includes a reflex system where Vex can predict and parry incoming telegraphed moves based on confidence ratings.
+4. **Persistent Memory**: Profiles are saved locally to `server/data/profiles.json` by player session ID so Vex remembers your playstyle between rounds. Use **"forget me"** on the menu to reset AI memory.
+
+---
+
+## 📁 Codebase Architecture
 
 ```
-public/            the frontend — plain HTML/CSS/canvas, no build step
-  index.html        HUD + overlays + canvas
-  css/style.css      arcade/molten visual theme
-  js/fighter.js      Fighter class: physics, moves, hit/block resolution, drawing
-  js/network.js      WebSocket client to the AI backend
-  js/game.js         input, main loop, round/match flow, AI controller
-
-server/             the backend
-  server.js          Express (serves the frontend) + a WebSocket endpoint
-                      that hosts the AdaptiveAI per player
-  aiEngine.js         the adaptive AI itself
-  data/profiles.json  per-player memory, written on disconnect/round end
+mk-game/
+├── public/                     # Frontend client assets
+│   ├── css/
+│   │   └── style.css           # Cyberpunk/arcade neon dark theme styling
+│   ├── js/
+│   │   ├── audio.js            # Synthesizer audio engine (hits, impacts, banter)
+│   │   ├── effects.js          # Particle effects, screen shake, slow-mo, supers
+│   │   ├── fighter.js          # Fighter physics, hurtboxes, hitboxes & animations
+│   │   ├── game.js             # Main game loop, input controller, HUD & flow
+│   │   ├── network.js          # Client WebSocket communicator
+│   │   └── renderer3d.js       # Three.js 3D arena scene & dynamic lighting
+│   └── index.html              # Game canvas, HUD overlays & UI screens
+│
+├── server/                     # Backend Node.js server
+│   ├── aiEngine.js             # Adaptive AI decision-making heuristic engine
+│   ├── server.js               # Express static server & WebSocket endpoint
+│   └── data/
+│       └── profiles.json       # Persistent AI memory per player
+│
+├── package.json
+└── README.md
 ```
 
-## How the AI adapts
+---
 
-`aiEngine.js` is a **heuristic pattern-reader**, not a trained model — no
-training step, fully deterministic to inspect, and it reacts within a
-single match instead of needing thousands of games:
+## 📜 License
 
-1. Every player action (punch, kick, special, grab, block, dodge) is
-   counted, along with what happened right after Vex's own attacks
-   (blocked / dodged / hit) and whether the player punishes Vex's whiffs.
-2. From those raw counts it derives a few traits each decision: block
-   rate, attack rate, preferred move, whiff-punish rate.
-3. `decide()` starts from baseline move weights, then nudges them using
-   those traits — e.g. a high block rate raises the weight on grabs and
-   specials (both beat block); a preference for kicks raises Vex's dodge
-   weight. A **confidence** value (based on sample size) scales how hard
-   it leans on a read, so Vex doesn't overreact in the first few seconds
-   of round 1.
-4. A separate **reflex layer** in `game.js` lets Vex react to a
-   *telegraphed* incoming attack (block/dodge) with a probability that
-   goes up if that attack type matches what the player favors — this is
-   what makes Vex feel like it's "seen this coming."
-5. Profiles persist to `server/data/profiles.json` per browser (via a
-   generated id in `localStorage`), so Vex remembers you between
-   sessions. The "forget me" button on the start screen wipes it.
-
-If the WebSocket can't reach the server (e.g. you open the HTML without
-running the backend), `game.js` falls back to a local copy of the same
-heuristic so the game still runs — just without persistence.
-
-## Known simplifications (good next steps)
-
-- No air attacks; jumping is purely for movement/mixups right now.
-- Two fixed fighters (Kade vs Vex) — no roster/select screen yet.
-- The AI decision endpoint is called over a real network round-trip; on a
-  slow connection this is masked by a local fallback decision, but a
-  same-process worker would remove the round-trip entirely.
+ISC License. Built for fighting game enthusiasts and AI experimentation.
