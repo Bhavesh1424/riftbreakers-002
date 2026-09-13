@@ -44,12 +44,22 @@
 
   // ---------------- input ----------------
   window.addEventListener("keydown", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    if (e.code === "KeyF") {
+      e.preventDefault();
+      toggleFullscreen();
+      return;
+    }
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     if (keys.has(e.code)) return;
     keys.add(e.code);
     handleKeyDown(e.code);
   });
-  window.addEventListener("keyup", (e) => { keys.delete(e.code); handleKeyUp(e.code); });
+  window.addEventListener("keyup", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    keys.delete(e.code);
+    handleKeyUp(e.code);
+  });
 
   function handleKeyDown(code) {
     if (phase !== "fighting") return;
@@ -1030,6 +1040,74 @@
     aiKnowledge = null;
     if (gameMode === "ai") document.getElementById("ai-read-text").textContent = "observing…";
   });
+
+  // ---------------- Screen Scaling & Fullscreen ----------------
+  let screenScaleMode = "fill"; // "fill" (covers 100% of viewport) | "fit" (preserves 16:9 ratio)
+
+  function updateScale() {
+    const app = document.getElementById("app");
+    if (!app) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    if (screenScaleMode === "fill") {
+      const scaleX = vw / 960;
+      const scaleY = vh / 540;
+      app.style.transform = `scale(${scaleX}, ${scaleY})`;
+    } else {
+      const scale = Math.min(vw / 960, vh / 540);
+      app.style.transform = `scale(${scale})`;
+    }
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn("Fullscreen request failed:", err);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  function setScaleMode(mode) {
+    screenScaleMode = mode;
+    const label = document.getElementById("scale-mode-label");
+    if (label) {
+      label.textContent = mode === "fill" ? "↔ FIT (16:9)" : "↔ FILL SCREEN";
+    }
+    updateScale();
+  }
+
+  const btnFs = document.getElementById("btn-fullscreen");
+  if (btnFs) {
+    btnFs.addEventListener("click", toggleFullscreen);
+  }
+
+  const btnScale = document.getElementById("btn-scale-mode");
+  if (btnScale) {
+    btnScale.addEventListener("click", () => {
+      setScaleMode(screenScaleMode === "fill" ? "fit" : "fill");
+    });
+  }
+
+  document.addEventListener("fullscreenchange", () => {
+    const fsIcon = document.getElementById("fs-btn-icon");
+    const fsLabel = document.getElementById("fs-btn-label");
+    if (document.fullscreenElement) {
+      if (fsIcon) fsIcon.textContent = "🗗";
+      if (fsLabel) fsLabel.textContent = "EXIT FULLSCREEN";
+    } else {
+      if (fsIcon) fsIcon.textContent = "⛶";
+      if (fsLabel) fsLabel.textContent = "FULLSCREEN";
+    }
+    updateScale();
+  });
+
+  window.addEventListener("resize", updateScale);
+  updateScale();
 
   requestAnimationFrame(loop);
 })();
